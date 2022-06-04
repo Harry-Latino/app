@@ -1,11 +1,11 @@
 """Define mixins to list and edit profile"""
 
-# Django
-from django.core.exceptions import PermissionDenied
+# Local
 from django.shortcuts import redirect
+from superadmin.templatetags.superadmin_utils import site_url
 
-# Forms
-# from .forms import ProfileForm
+from apps.authentication.models.users import User
+from apps.utils.services import APIService
 
 
 class UserListMixin:
@@ -16,40 +16,34 @@ class UserListMixin:
         return queryset
 
 
-"""
-
-class UserFormMixin:
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context.update(
-            {"profile_form": self.get_profile_form(),}
-        )
-        return context
-
-    def get_profile_form(self):
-        kwargs = self.get_form_kwargs()
-        kwargs.update({"instance": self.object.profile})
-        profile_form = ProfileForm(**kwargs)
-        return profile_form
-
-    def form_valid(self, form):
-        profile_form = self.get_profile_form()
-        if profile_form.is_valid():
-            profile_form.save()
-            form.save()
-            return redirect(self.get_success_url())
-        else:
-            form.errors.update(**profile_form.errors)
-            return self.form_invalid(form)
-
-    def get(self, request, *args, **kwargs):
-        self.object = self.get_object()
-        if not self.object == request.user:
-            raise PermissionDenied
-        return super().get(request, *args, **kwargs)
-"""
-
-
 class UserProfileMixin:
     def get_object(self, queryset=None):
         return self.request.user
+
+
+class AccessTokenCreateMixin:
+    def form_valid(self, form):
+        profile = form.cleaned_data.get("wizard")
+        self.object = form.save(commit=False)
+        to_users_id = [profile.forum_user_id]
+        moderator = self.request.user.forum_user_id
+        if moderator and moderator != profile.forum_user_id:
+            to_users_id.append(moderator)
+        title = "Cuenta en el Magic Mall creada correctamente"
+        body = "HTML generado"
+        to_users_id_cleaned = ""
+
+        for user_id in to_users_id:
+            to_users_id_cleaned += f"&to[]={user_id}"
+
+        APIService.download_user_data_and_update(profile)
+        APIService.send_personal_message(to_users_id=to_users_id_cleaned, title=title, body=body)
+
+        if profile.user:
+            user = profile.user
+        else:
+            user = User.objects.create_user(username=profile.nick, password=str(self.object.token), profile=profile)
+        self.object.user = user
+        self.object.save()
+
+        return redirect(site_url(self.object, "detail"))

@@ -18,6 +18,8 @@ class Profile(BaseModel):
     )
     range_of_objects = models.CharField(max_length=8, verbose_name="Rango de Objetos")
     vault_number = models.IntegerField(verbose_name="Número de Bóveda")
+    boxroom_number = models.IntegerField(verbose_name="Número de Bóveda Trastero", null=True, blank=True)
+    character_sheet = models.IntegerField(verbose_name="Número de Bóveda Trastero", null=True, blank=False)
     avatar = models.URLField(null=True, blank=True)
     accumulated_posts = models.IntegerField(
         verbose_name="posteos acumulados", editable=False, default=0

@@ -6,13 +6,20 @@ from superadmin.templatetags.superadmin_utils import site_url
 from environs import Env
 import requests
 
-
 # Models
 from apps.utils.models import Link
 
 env = Env()
 API_KEY = env("API_KEY")
-
+API_KEY_MP = env("API_KEY_MP")
+PERSONAL_MESSAGE_API_URL = "https://www.harrylatino.org/api/core/messages"
+# params:
+"""
+from int   User ID conversation is from
+to array One or more user IDs conversation is sent to
+title  string Conversation title
+body string Conversation body
+"""
 
 class LinkService:
     @classmethod
@@ -43,6 +50,15 @@ class APIService:
         return payload
 
     @classmethod
+    def get_payload_personal_message(cls, data, user_to):
+        payload = ""
+        for key, value in data.items():
+            payload += f"{key}={value}&"
+        payload += user_to
+        payload = payload.encode("utf-8")
+        return payload
+
+    @classmethod
     def save_forum_user_data(cls, wizard):
         data = {}
         url = f"{cls.USER_BASE_URL}{wizard.forum_user_id}?key={API_KEY}"
@@ -54,7 +70,7 @@ class APIService:
         )
 
     @classmethod
-    def get_forum_user_data(cls, wizard):
+    def get_forum_user_data(cls, wizard, get_nick_name=False):
         url = f"{cls.USER_BASE_URL}{wizard.forum_user_id}?key={API_KEY}"
         response = requests.request("GET", url, headers={}, data={})
         data = response.json()
@@ -67,6 +83,10 @@ class APIService:
         user_data = dict()
         for key, value in raw_user_data.items():
             user_data.update({f"customFields[{key}]": value["value"]})
+
+        if get_nick_name:
+            return user_data, data.get("name")
+
         return user_data
 
     @classmethod
@@ -91,3 +111,30 @@ class APIService:
         }
         response = requests.request("POST", url, headers=headers, data=payload)
         return response.json()
+
+    @classmethod
+    def send_personal_message(cls, to_users_id, title, body, from_user_id=121976):
+        payload = cls.get_payload_personal_message({"from": from_user_id, "title": title, "body": body}, to_users_id)
+        url = f"{PERSONAL_MESSAGE_API_URL}?key={API_KEY_MP}"
+        headers = {
+            "Content-Type": "application/x-www-form-urlencoded",
+        }
+        response = requests.request("POST", url, headers=headers, data=payload)
+        return response.json()
+
+    @classmethod
+    def download_user_data_and_update(cls, wizard):
+        profile_data, nick = cls.get_forum_user_data(wizard=wizard, get_nick_name=True)
+        wizard.range_of_creatures = profile_data.get("35", "")
+        wizard.range_of_objects = profile_data.get("36", "")
+        boxroom_number = profile_data.get("66", None)
+        vault_number = profile_data.get("64", None)
+        character_sheet = profile_data.get("65", None)
+        if boxroom_number:
+            wizard.boxroom_number = boxroom_number
+        if vault_number:
+            wizard.vault_number = vault_number
+        if character_sheet:
+            wizard.character_sheet = character_sheet
+        wizard.save()
+
