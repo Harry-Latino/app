@@ -71,7 +71,7 @@ class Sale(BaseModel, SaleTransitions):
 
     def clean(self):
         if not self.pk:
-            if self.product.check_stock() == 0:
+            if self.product.available_stock <= 0:
                 if self.vip_sale or self.is_award:
                     self.product.initial_stock = self.product.initial_stock + 1
                     self.product.save()
@@ -82,8 +82,9 @@ class Sale(BaseModel, SaleTransitions):
                         )
                     )
         elif self.pk:
+            # TODO: Define logic for change stock
             sale = Sale.objects.get(pk=self.pk)
-            if sale.product.pk != self.product.pk and self.product.check_stock() == 0:
+            if sale.product.pk != self.product.pk and self.product.available_stock == 0:
                 raise ValidationError(
                     for_humans(
                         f"No se puede vender {self.product.name} ya que su stock actual es 0"

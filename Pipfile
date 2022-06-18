@@ -21,6 +21,7 @@ django-mathfilters = "*"
 requests = "*"
 djangorestframework = "*"
 django-fsm = "*"
+django-filter = "*"
 
 [requires]
 python_version = "3.7"

@@ -2,6 +2,7 @@
 
 # Local
 from django.shortcuts import redirect
+from django.template.loader import render_to_string
 from superadmin.templatetags.superadmin_utils import site_url
 
 from apps.authentication.models.users import User
@@ -25,25 +26,28 @@ class AccessTokenCreateMixin:
     def form_valid(self, form):
         profile = form.cleaned_data.get("wizard")
         self.object = form.save(commit=False)
-        to_users_id = [profile.forum_user_id]
-        moderator = self.request.user.forum_user_id
-        if moderator and moderator != profile.forum_user_id:
-            to_users_id.append(moderator)
-        title = "Cuenta en el Magic Mall creada correctamente"
-        body = "HTML generado"
-        to_users_id_cleaned = ""
 
-        for user_id in to_users_id:
-            to_users_id_cleaned += f"&to[]={user_id}"
-
-        APIService.download_user_data_and_update(profile)
-        APIService.send_personal_message(to_users_id=to_users_id_cleaned, title=title, body=body)
+        profile = APIService.download_user_data_and_update(profile)
 
         if profile.user:
             user = profile.user
         else:
-            user = User.objects.create_user(username=profile.nick, password=str(self.object.token), profile=profile)
+            user = User.objects.create_user(
+                username=profile.nick, password=str(self.object.token), profile=profile
+            )
+
         self.object.user = user
         self.object.save()
+        self.send_message(profile)
 
         return redirect(site_url(self.object, "detail"))
+
+    def send_message(self, profile):
+        title = "Cuenta en el Magic Mall creada correctamente"
+        body = render_to_string(
+            "authentication/send_personal_message.html",
+            context={"nick": profile.nick, "token": self.object.get_login_url},
+        )
+        to_user_id = f"&to[]={profile.forum_user_id}"
+
+        APIService.send_personal_message(to_users_id=to_user_id, title=title, body=body)

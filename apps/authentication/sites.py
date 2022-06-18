@@ -19,7 +19,10 @@ class UserSite(BaseSite):
     # form_mixins = (UserFormMixin,)
     list_mixins = (UserListMixin,)
     detail_fields = (
-        ("username", "get_full_name:nombre completo",),
+        (
+            "username",
+            "get_full_name:nombre completo",
+        ),
         ("email", "old_number"),
     )
     list_fields = ("username:usuario", "email")
@@ -32,7 +35,7 @@ class UserProfileSite(UserSite):
 
 
 @register("authentication.AccessToken")
-class AccessToken(BaseSite):
+class AccessTokenSite(BaseSite):
     form_class = AccessTokenForm
     form_mixins = (AccessTokenCreateMixin,)
     allow_views = (

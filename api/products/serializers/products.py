@@ -8,7 +8,7 @@ from rest_framework import serializers
 from apps.products.models import Product
 
 
-class ProductSerializers(serializers.ModelSerializer):
+class ProductSerializer(serializers.ModelSerializer):
     available_by_default = serializers.BooleanField(
         source="category.available_by_default"
     )

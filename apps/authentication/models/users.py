@@ -21,7 +21,9 @@ class User(AbstractUser):
         help_text="Datetime on which the user was last modified",
     )
     old_number = models.IntegerField(verbose_name="ID anterior", null=True, blank=True)
-    forum_user_id = models.IntegerField(verbose_name="ID del foro", null=True, blank=True)
+    forum_user_id = models.IntegerField(
+        verbose_name="ID del foro", null=True, blank=True
+    )
     USERNAME_FIELD = "username"
     REQUIRED_FIELDS = []
 
@@ -39,7 +41,11 @@ class User(AbstractUser):
 class AccessToken(models.Model):
     """Create a random token for login"""
 
-    token = models.UUIDField(unique=True, default=uuid4, editable=False,)
+    token = models.UUIDField(
+        unique=True,
+        default=uuid4,
+        editable=False,
+    )
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="token")
 
     class Meta(AbstractUser.Meta):
@@ -54,3 +60,7 @@ class AccessToken(models.Model):
     @property
     def profile(self):
         return self.user.profile
+
+    @property
+    def get_login_url(self):
+        pass

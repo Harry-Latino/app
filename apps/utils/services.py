@@ -21,6 +21,7 @@ title  string Conversation title
 body string Conversation body
 """
 
+
 class LinkService:
     @classmethod
     def get_short_url(cls, destination):
@@ -114,7 +115,9 @@ class APIService:
 
     @classmethod
     def send_personal_message(cls, to_users_id, title, body, from_user_id=121976):
-        payload = cls.get_payload_personal_message({"from": from_user_id, "title": title, "body": body}, to_users_id)
+        payload = cls.get_payload_personal_message(
+            {"from": from_user_id, "title": title, "body": body}, to_users_id
+        )
         url = f"{PERSONAL_MESSAGE_API_URL}?key={API_KEY_MP}"
         headers = {
             "Content-Type": "application/x-www-form-urlencoded",
@@ -130,11 +133,18 @@ class APIService:
         boxroom_number = profile_data.get("66", None)
         vault_number = profile_data.get("64", None)
         character_sheet = profile_data.get("65", None)
+
         if boxroom_number:
+
             wizard.boxroom_number = boxroom_number
+
         if vault_number:
             wizard.vault_number = vault_number
+
         if character_sheet:
             wizard.character_sheet = character_sheet
-        wizard.save()
 
+        wizard.save()
+        wizard.refresh_from_db()
+
+        return wizard

@@ -72,6 +72,7 @@ LOCAL_APPS = [
     "apps.authentication",
     "apps.boxrooms",
     "apps.dynamicforms",
+    "apps.ecommerce",
     "apps.insoles",
     "apps.members",
     "apps.menu",
@@ -251,4 +252,11 @@ TEMPLATE_WIDGETS_DETAIL = {
     "TextField": "detail_widgets/textarea.html",
     "ForeignKey": "detail_widgets/foreignkey.html",
     "OneToOneField": "detail_widgets/foreignkey.html",
+}
+
+REST_FRAMEWORK = {
+    "DEFAULT_AUTHENTICATION_CLASSES": [
+        "rest_framework.authentication.BasicAuthentication",
+        "rest_framework.authentication.SessionAuthentication",
+    ]
 }
