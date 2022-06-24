@@ -37,4 +37,5 @@ class AccessTokenForm(ModelForm):
 
     class Meta:
         model = AccessToken
-        fieldsets = ("wizard",)
+        fieldsets = ("wizard", "user")
+        widgets = {"user": forms.HiddenInput()}

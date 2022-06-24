@@ -260,3 +260,6 @@ REST_FRAMEWORK = {
         "rest_framework.authentication.SessionAuthentication",
     ]
 }
+
+SITE_URL = env.url("SITE_URL", "http://localhost:8000")
+TOPIC_QUESTIONS = env.int("TOPIC_QUESTIONS", 106688)

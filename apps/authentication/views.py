@@ -3,17 +3,17 @@ from django.contrib import messages
 from django.contrib.auth import login
 from django.shortcuts import redirect
 from django.urls import reverse
-from superadmin.views import DetailView
+from django.views.generic import DetailView
+from superadmin.views import DetailView as DetailViewSA
 from .sites import UserProfileSite
 from .models import User, AccessToken
 
 
-class UserProfile(DetailView):
+class UserProfile(DetailViewSA):
     site = UserProfileSite(User)
 
 
 class LoginWithToken(DetailView):
-    """Rewrite Detail View to Login with token"""
 
     model = AccessToken
     slug_field = "token"
@@ -21,7 +21,6 @@ class LoginWithToken(DetailView):
 
     def get(self, request, *args, **kwargs):
         """Validate user and login"""
-        # self.object = AccessToken.objects.get(token=kwargs["uuid"])
         self.object = self.get_object()
         login(request, self.object.user)
         messages.success(request, "Te autenticaste correctamente")

@@ -1,1 +1,2 @@
-from .users import User, AccessToken
+from .users import User
+from .token import AccessToken

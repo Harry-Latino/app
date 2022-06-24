@@ -1,14 +1,16 @@
 """Models to purchases"""
-
+from django.core.exceptions import ValidationError
 from django.db import models
 
 # Models
 from django.db.models.signals import post_save, post_delete
+from django.utils.text import capfirst, get_text_list
 from django_fsm import FSMIntegerField
 from tracing.models import BaseModel
 
 from apps.ecommerce.signals import reserve_stock, cancel_reserve_stock
 from apps.ecommerce.transitions import PurchaseTransitions
+from django.utils.translation import gettext_lazy as _
 
 
 class Purchase(BaseModel, PurchaseTransitions):
@@ -27,6 +29,13 @@ class Purchase(BaseModel, PurchaseTransitions):
         on_delete=models.PROTECT,
         null=False,
     )
+
+    def __str__(self):
+        return f"{self.user.__str__()} - {self.get_created_date} ({self.get_state_display()})"
+
+    @property
+    def get_created_date(self):
+        return self.created_date.strftime("%d/%m/%Y")
 
     class Meta:
         verbose_name = "Compra"
@@ -52,6 +61,7 @@ class PurchaseLine(BaseModel):
     class Meta:
         verbose_name = "línea de compra"
         verbose_name_plural = "líneas de compra"
+        unique_together = ["product", "purchase"]
 
 
 post_save.connect(reserve_stock, sender=PurchaseLine)

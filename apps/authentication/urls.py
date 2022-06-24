@@ -59,7 +59,7 @@ urlpatterns = (
         name="password_reset_complete",
     ),
     path(
-        route="login/<slug:uuid>",
+        route="login/<slug:slug>/",
         view=LoginWithToken.as_view(),
         name="login_witch_token",
     ),

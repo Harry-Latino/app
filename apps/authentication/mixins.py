@@ -38,16 +38,7 @@ class AccessTokenCreateMixin:
 
         self.object.user = user
         self.object.save()
-        self.send_message(profile)
+        self.object.refresh_from_db()
+        self.object.send_message()
 
         return redirect(site_url(self.object, "detail"))
-
-    def send_message(self, profile):
-        title = "Cuenta en el Magic Mall creada correctamente"
-        body = render_to_string(
-            "authentication/send_personal_message.html",
-            context={"nick": profile.nick, "token": self.object.get_login_url},
-        )
-        to_user_id = f"&to[]={profile.forum_user_id}"
-
-        APIService.send_personal_message(to_users_id=to_user_id, title=title, body=body)

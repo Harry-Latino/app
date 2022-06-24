@@ -38,9 +38,5 @@ class UserProfileSite(UserSite):
 class AccessTokenSite(BaseSite):
     form_class = AccessTokenForm
     form_mixins = (AccessTokenCreateMixin,)
-    allow_views = (
-        "list",
-        "create",
-        "detail",
-    )
     detail_fields = ("user:Usuario",)
+    allow_views = ("create", "list", "detail", "delete")
